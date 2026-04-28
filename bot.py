@@ -420,12 +420,16 @@ _FIELD_PROMPTS = {
     "cat": "Пришлите новую категорию (например: Работа, Личное, Идея, Покупки)",
     "tags": "Пришлите теги через пробел или запятую (например: проект, дедлайн)",
     "rtext": "Пришлите новый текст напоминания",
-    "rtime": (
-        "Пришлите новое время напоминания. Можно:\n"
-        "• ISO: 2026-04-26 14:30 (в TZ Europe/Moscow)\n"
-        "• Свободно: «завтра в 12:30», «через 2 часа», «в пятницу в 9»"
-    ),
+    # rtime генерируется динамически в _ask_for_edit (нужна cfg.tz из контекста)
 }
+
+
+def _rtime_prompt(tz_name: str) -> str:
+    return (
+        "Пришлите новое время напоминания. Можно:\n"
+        f"• ISO: 2026-04-26 14:30 (в TZ {tz_name})\n"
+        "• Свободно: «завтра в 12:30», «через 2 часа», «в пятницу в 9»"
+    )
 
 
 async def _ask_for_edit(
@@ -435,7 +439,11 @@ async def _ask_for_edit(
     item_id: int,
     field: str,
 ) -> None:
-    prompt_text = _FIELD_PROMPTS.get(field, "Пришлите новое значение")
+    if field == "rtime":
+        cfg: Config = context.bot_data["cfg"]
+        prompt_text = _rtime_prompt(cfg.tz)
+    else:
+        prompt_text = _FIELD_PROMPTS.get(field, "Пришлите новое значение")
     prompt = await context.bot.send_message(
         chat_id=chat_id,
         text=(

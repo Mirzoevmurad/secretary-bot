@@ -161,5 +161,6 @@ class GroqLLM:
                 "reminders": valid_reminders,
                 "tags": [str(x) for x in raw.get("tags", []) if isinstance(x, str)],
                 "category": str(raw.get("category", "Другое")),
+                "is_reminder_only": bool(raw.get("is_reminder_only", False)),
             }
             return Summary.model_validate(fallback)
